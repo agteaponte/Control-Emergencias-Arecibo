@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -1081,12 +1080,12 @@ import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit }
 
 // ▸▸ REEMPLAZA CON TUS CREDENCIALES REALES DE FIREBASE CONSOLE
 const FB_CFG = {
-  apiKey:            "TU_API_KEY",
-  authDomain:        "TU_PROYECTO.firebaseapp.com",
-  projectId:         "TU_PROYECTO_ID",
-  storageBucket:     "TU_PROYECTO.appspot.com",
-  messagingSenderId: "TU_SENDER_ID",
-  appId:             "TU_APP_ID"
+  apiKey:            "AIzaSyAkjIRWdtpb3FKelk7rhKKPgzf5HgK90pc",
+  authDomain:        "dace-arecibo-oficial.firebaseapp.com",
+  projectId:         "dace-arecibo-oficial",
+  storageBucket:     "dace-arecibo-oficial.firebasestorage.app",
+  messagingSenderId: "1061384536706",
+  appId:             "1:1061384536706:web:a691aa19779500a158aa9b"
 };
 
 // NOTA DE SEGURIDAD: Configura Firebase Security Rules en la consola para
@@ -2342,146 +2341,6 @@ document.getElementById('btn-print').addEventListener('click', () => {
 });
 
 
-  const pend   = getPend();
-  const area   = document.getElementById('print-area');
-  const now    = new Date();
-  const ts     = now.toLocaleString('es-PR', {
-    day:'2-digit', month:'2-digit', year:'numeric',
-    hour:'2-digit', minute:'2-digit', hour12:false
-  });
-
-  // Obtener todos los reportes disponibles (locales + sincronizados en memoria)
-  const allItems = [];
-  document.querySelectorAll('.rpt-item').forEach(el => {
-    const zone  = el.querySelector('.rpt-zone')?.textContent?.trim() || '—';
-    const time  = el.querySelector('.rpt-ts')?.textContent?.trim()   || '—';
-    const op    = el.querySelector('.rpt-op')?.textContent?.trim()   || '—';
-    const nota  = el.querySelector('[style*="margin-top:6px"]')?.textContent?.trim() || '';
-    const tags  = [...el.querySelectorAll('.tag')].map(t => ({ txt: t.textContent.trim(), cls: t.className.replace('tag','').trim() }));
-    const synced = el.querySelector('.rpt-dot')?.classList.contains('synced');
-    allItems.push({ zone, time, op, nota, tags, synced });
-  });
-
-  if (!allItems.length) {
-    toast('Sin reportes para imprimir', 'warn');
-    return false;
-  }
-
-  // Obtener logo embebido
-  const logoSrc = document.querySelector('.hdr-logo')?.src || '';
-
-  // Obtener dependencia del operador activo
-  const depSel = document.getElementById('dependencia');
-  const depText = depSel?.options[depSel.selectedIndex]?.text || 'Área de Arecibo';
-
-  // ── Estado de cuarteles ────────────────────────────────────────────────
-  const zonas = [...new Set(CUARTELES.map(c => c.zona))];
-  let cuartelesHTML = '';
-  zonas.forEach(zona => {
-    const cqs = CUARTELES.filter(c => c.zona === zona);
-    const hasData = cqs.some(c => {
-      const d = cuartelesData[c.id];
-      return d.generador || d.fuel != null || d.cisterna;
-    });
-    if (!hasData) return;
-
-    cuartelesHTML += `<div class="print-section-title">${esc(zona)}</div>
-    <table class="print-cq-table">
-      <tr>
-        <th>Cuartel</th><th>Generador</th><th>Combustible</th><th>Cisterna</th><th>Agua Potable</th>
-      </tr>`;
-    cqs.forEach(cq => {
-      const d = cuartelesData[cq.id];
-      if (!d.generador && d.fuel == null && !d.cisterna) return;
-      const genCls = d.generador === 'inoperable' ? 'pb-inoperable' : d.generador === 'dano_parcial' ? 'pb-parcial' : 'pb-operativo';
-      const genLbl = { operativo:'Operativo', dano_parcial:'Daño Parcial', inoperable:'INOPERABLE' }[d.generador] || '—';
-      const cisCls = d.cisterna === 'critica' ? 'pb-inoperable' : d.cisterna === 'media' ? 'pb-parcial' : 'pb-operativo';
-      const cisLbl = { llena:'Llena ≥72h', media:'Media', critica:'CRÍTICA' }[d.cisterna] || '—';
-      const fuelColor = d.fuel <= 20 ? '#c0000a' : d.fuel <= 40 ? '#7a4a00' : '#005a1f';
-      cuartelesHTML += `<tr>
-        <td><strong>${esc(cq.nombre)}</strong></td>
-        <td class="${genCls}">${esc(genLbl)}</td>
-        <td style="color:${fuelColor};font-weight:${d.fuel <= 40 ? '700' : '400'};">${d.fuel != null ? d.fuel + '%' : '—'}</td>
-        <td class="${cisCls}">${esc(cisLbl)}</td>
-        <td>${d.aguaPotable === 'si' ? '✓ Disponible' : d.aguaPotable === 'no' ? '✗ Insuficiente' : '—'}</td>
-      </tr>`;
-    });
-    cuartelesHTML += '</table>';
-  });
-
-  // ── Tabla de reportes ──────────────────────────────────────────────────
-  const filas = allItems.map(r => {
-    const critTag = r.tags.find(t => ['CRITICO','EXTREMO','ALERTA','NORMAL'].some(v => t.txt.includes(v)));
-    const critCls = critTag ? (critTag.txt.includes('EXTREMO') ? 'pb-extremo' : critTag.txt.includes('CRITICO') ? 'pb-critico' : critTag.txt.includes('ALERTA') ? 'pb-alerta' : 'pb-normal') : '';
-    const nivelTag = r.tags.find(t => t.txt.startsWith('Nv '));
-    const fuelTag  = r.tags.find(t => t.txt.includes('⛽'));
-    const radioTag = r.tags.find(t => t.txt.includes('Radio'));
-    const facTag   = r.tags.find(t => ['Operable','Daño','INOPERABLE'].some(v => t.txt.includes(v)));
-    const pendTag  = r.tags.find(t => t.txt === 'Pendiente');
-    const estado   = pendTag ? '<span style="color:#7a4a00;">⏳ Pendiente</span>' : '<span style="color:#005a1f;">✓ Sincronizado</span>';
-
-    return `<tr>
-      <td>${esc(r.time)}</td>
-      <td><strong>${esc(r.zone)}</strong></td>
-      <td>${esc(r.op.replace('👤 ',''))}</td>
-      <td>${nivelTag ? esc(nivelTag.txt) : '—'}</td>
-      <td class="${critCls}">${critTag ? esc(critTag.txt) : '—'}</td>
-      <td>${facTag ? esc(facTag.txt) : '—'}</td>
-      <td>${fuelTag ? esc(fuelTag.txt.replace('⛽ ','')) : '—'}</td>
-      <td>${radioTag ? esc(radioTag.txt) : '—'}</td>
-      <td>${esc(r.nota.replace('📝 ','').substring(0,80))}${r.nota.length > 80 ? '…' : ''}</td>
-      <td>${estado}</td>
-    </tr>`;
-  }).join('');
-
-  // ── Montar HTML de impresión ───────────────────────────────────────────
-  area.innerHTML = `
-    <div class="print-header">
-      ${logoSrc ? `<img class="print-logo" src="${logoSrc}" alt="Logo">` : ''}
-      <div>
-        <div class="print-title">Centro de Control Emergencias — Área de Arecibo</div>
-        <div class="print-sub">Policía de Puerto Rico · Plan Operacional 2026 · ${esc(depText)}</div>
-      </div>
-      <div class="print-ts">
-        Impreso: ${esc(ts)}<br>
-        Reportes: ${allItems.length} · Pendientes: ${pend.length}
-      </div>
-    </div>
-
-    ${cuartelesHTML ? `<div class="print-section-title">Estado de Cuarteles</div>${cuartelesHTML}` : ''}
-
-    <div class="print-section-title">Registro de Reportes Transmitidos</div>
-    <table class="print-table">
-      <tr>
-        <th>Fecha/Hora</th>
-        <th>Dependencia</th>
-        <th>Operador · Turno</th>
-        <th>Nivel</th>
-        <th>Criticidad</th>
-        <th>Facilidad</th>
-        <th>Combustible</th>
-        <th>Radio</th>
-        <th>Observaciones</th>
-        <th>Estado</th>
-      </tr>
-      ${filas}
-    </table>
-
-    <div class="print-footer">
-      <span>Centro de Control Emergencias Arecibo — PPR · Plan Operacional 2026</span>
-      <span>Documento generado: ${esc(ts)}</span>
-    </div>`;
-
-  return true;
-}
-
-document.getElementById('btn-print').addEventListener('click', () => {
-  if (buildPrintArea()) {
-    setTimeout(() => window.print(), 150);
-  }
-});
-
-
 window.togglePanel = function(id, arrowId) {
   const panel = document.getElementById(id);
   const arrow = document.getElementById(arrowId);
@@ -2564,12 +2423,12 @@ renderPP();
 
 // ▸▸ REEMPLAZA CON TUS CREDENCIALES REALES DE FIREBASE CONSOLE
 const FB_CFG = {
-  apiKey:            "TU_API_KEY",
-  authDomain:        "TU_PROYECTO.firebaseapp.com",
-  projectId:         "TU_PROYECTO_ID",
-  storageBucket:     "TU_PROYECTO.appspot.com",
-  messagingSenderId: "TU_SENDER_ID",
-  appId:             "TU_APP_ID"
+  apiKey:            "AIzaSyAkjIRWdtpb3FKelk7rhKKPgzf5HgK90pc",
+  authDomain:        "dace-arecibo-oficial.firebaseapp.com",
+  projectId:         "dace-arecibo-oficial",
+  storageBucket:     "dace-arecibo-oficial.firebasestorage.app",
+  messagingSenderId: "1061384536706",
+  appId:             "1:1061384536706:web:a691aa19779500a158aa9b"
 };
 
 const FB_OK    = !FB_CFG.apiKey.startsWith("TU_");
