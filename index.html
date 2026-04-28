@@ -2421,29 +2421,6 @@ window.resetPP = function() {
 
 renderPP();
 
-// ▸▸ REEMPLAZA CON TUS CREDENCIALES REALES DE FIREBASE CONSOLE
-const FB_CFG = {
-  apiKey:            "AIzaSyAkjIRWdtpb3FKelk7rhKKPgzf5HgK90pc",
-  authDomain:        "dace-arecibo-oficial.firebaseapp.com",
-  projectId:         "dace-arecibo-oficial",
-  storageBucket:     "dace-arecibo-oficial.firebasestorage.app",
-  messagingSenderId: "1061384536706",
-  appId:             "1:1061384536706:web:a691aa19779500a158aa9b"
-};
-
-const FB_OK    = !FB_CFG.apiKey.startsWith("TU_");
-const COL      = "reportes_arecibo_v3";
-const L_KEY    = "mando_pendientes_v3";
-const L_OP     = "mando_operador";
-const L_DEP    = "mando_dependencia";
-const L_TS     = "mando_ultimo_ts";
-const MAX_H    = 25;
-
-let db = null;
-if (FB_OK) {
-  try { db = getFirestore(initializeApp(FB_CFG)); }
-  catch(e){ console.warn("Firebase init error:", e); }
-}
 
 /* ─── ESTADO LOCAL ───────────────────────────────────────────────────────── */
 const STATE = {
