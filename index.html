@@ -1054,12 +1054,9 @@ function calcCriticidad() {
   const esCritico = !esExtremo&&(cqCrit||foodCrit||STATE.radio==='fallo'||refCrit||nivel>=4);
   const esAlerta  = !esExtremo&&!esCritico&&(cqAlert||STATE.facilidad==='dano_parcial'||foodAlert||STATE.radio==='sin_bateria'||STATE.celular==='sin_senal'||refAlert||nivel>=3);
   let crit,lbl,desc;
-  if(esExtremo){crit='EXTREMO';lbl='EXTREMO';desc='NOTIFICAR CDTE. ÁREA
-DE INMEDIATO';}
-  else if(esCritico){crit='CRITICO';lbl='CRÍTICO';desc='Notificar coordinador
-de zona de inmediato';}
-  else if(esAlerta){crit='ALERTA';lbl='ALERTA';desc='Monitorear —
-Recursos bajo mínimo';}
+  if(esExtremo){crit='EXTREMO';lbl='EXTREMO';desc='NOTIFICAR CDTE. ÁREA\nDE INMEDIATO';}
+  else if(esCritico){crit='CRITICO';lbl='CRÍTICO';desc='Notificar coordinador\nde zona de inmediato';}
+  else if(esAlerta){crit='ALERTA';lbl='ALERTA';desc='Monitorear —\nRecursos bajo mínimo';}
   else{crit='NORMAL';lbl='NORMAL';desc='Situación estable';}
   document.getElementById('crit-badge').className='crit-badge crit-'+crit;
   document.getElementById('crit-label').textContent=lbl;
